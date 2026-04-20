@@ -1,0 +1,14 @@
+# ignore stuff of the OS
+.DS_Store
+
+# ignore Python faff
+__pycache__
+
+# ignore SECRETS
+.env
+secrets
+secrets/
+
+# ignore temporary working files
+data/clean/*.csv
+data/clean/*.tsv
