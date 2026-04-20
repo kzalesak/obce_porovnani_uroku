@@ -5,9 +5,20 @@ import re
 
 # ================= NASTAVENÍ CEST =================
 INPUT_DIR = 'data/clean/s3_final_ids'
-OUTPUT_FILE = 'data/clean/analyza_urokovych_sazeb.tsv'
+OUTPUT_DIR = 'data/clean/kontrola_fixnosti'
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'kontrola_fixnosti.tsv')
+S4_DIR = 'data/clean/s4_kontrola_fixnosti'
 
 def analyze_rates():
+    # 0. Příprava složek
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        print(f"Vytvořena složka pro výstupy: {OUTPUT_DIR}")
+        
+    if not os.path.exists(S4_DIR):
+        os.makedirs(S4_DIR)
+        print(f"Vytvořena složka pro manuálně zkontrolované soubory: {S4_DIR}")
+
     files = [f for f in os.listdir(INPUT_DIR) if f.endswith('.tsv')]
     
     if not files:
@@ -16,7 +27,7 @@ def analyze_rates():
 
     all_dataframes = []
 
-    print("1. Načítám soubory a extrahuji sazby...")
+    print("\n1. Načítám soubory a extrahuji sazby...")
     for filename in files:
         # Pokus o vytažení roku z názvu souboru (např. 2021, 2024)
         match = re.search(r'(20[1-9][0-9])', filename)
@@ -98,7 +109,7 @@ def analyze_rates():
     # Odstraníme řádky, kde neznáme sazbu v ani jednom z let (vyčistí to matici)
     final_df = final_df.dropna(subset=rate_cols, how='all')
 
-    print(f"4. Ukládám výsledek: {OUTPUT_FILE}")
+    print(f"4. Ukládám výsledek k revizi: {OUTPUT_FILE}")
     final_df.to_csv(OUTPUT_FILE, sep='\t', index=False)
     
     # Krátká statistika
@@ -115,6 +126,15 @@ def analyze_rates():
         (final_df['FIXED_NOSTRING_OR_VARIABLE_STRING'] == 'FIXED_NOSTRING')
     ]
     print(f"\nUpozornění: Nalezeno {len(diff)} sazeb, které se sice změnily (VARIABLE), ale neobsahují žádný text identifikující variabilitu.")
+    
+    # Finální instrukce pro uživatele
+    print(f"\n=========================================================")
+    print(f"HOTOVO. Výstupní soubor čeká na vaši manuální kontrolu v:")
+    print(f"--> {OUTPUT_FILE}")
+    print(f"\nAž provedete manuální korekce a rozhodnete o finální")
+    print(f"klasifikaci úrokových sazeb, uložte výsledný soubor do složky:")
+    print(f"--> {S4_DIR}")
+    print(f"=========================================================\n")
 
 if __name__ == "__main__":
     analyze_rates()
