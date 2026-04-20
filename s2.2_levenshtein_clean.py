@@ -25,8 +25,8 @@ OUTPUT_DIR_TEMP = os.path.join(OUTPUT_BASE_TEMP, f'dist{LEV_VZD}')
 OUTPUT_DIR_MANUAL = 'data/clean/s2.2_levenshtein_clean'
 
 # Názvy sloupců po normalizaci (musí odpovídat hlavičkám ve vašich datech)
-SLOUPEC_ICO_REF = 'IČO poskytovatele /BIC/ZC_PARTP:ZC_PARTP'
-SLOUPEC_NAZEV_REF = 'Název poskytovatele /BIC/ZC_NAZPOS:ZC_NAZPOS'
+SLOUPEC_ICO_REF = 'IČO poskytovatele/BIC/ZC_PARTP:ZC_PARTP'
+SLOUPEC_NAZEV_REF = 'Název poskytovatele/BIC/ZC_NAZPOS:ZC_NAZPOS'
 # =====================================================
 
 def prepare_directories():
