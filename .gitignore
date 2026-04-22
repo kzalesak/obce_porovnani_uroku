@@ -10,5 +10,5 @@ secrets
 secrets/
 
 # ignore temporary working files
-data/clean/*.csv
-data/clean/*.tsv
+# data/clean/*.csv
+# data/clean/*.tsv
