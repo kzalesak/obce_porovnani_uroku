@@ -72,14 +72,17 @@ def analyze_rates():
         for col in rate_cols:
             val = row[col]
             if pd.notna(val) and str(val).strip() != '':
-                val_str = str(val).strip().replace(',', '.')
+                # Odstraníme "p.a." (case-insensitive, s tečkami i bez) pro čistý text
+                val_str = re.sub(r'(?i)p\.?\s*a\.?', '', str(val)).strip()
+                val_str = val_str.replace(',', '.')
+                
                 # Pokusíme se převést na číslo pro přesnější porovnání (0 vs 0.00)
                 try:
                     num = float(val_str.replace('%', '').strip())
                     unique_rates.add(str(num))
                 except ValueError:
                     # Pokud je to čistý text (např. PRIBOR), přidáme ho jako text
-                    unique_rates.add(val_str.lower())
+                    unique_rates.add(str(val).lower().strip())
         
         return 'VARIABLE' if len(unique_rates) > 1 else 'FIXED'
 
@@ -88,9 +91,12 @@ def analyze_rates():
         for col in rate_cols:
             val = row[col]
             if pd.notna(val) and str(val).strip() != '':
+                # Odstraníme "p.a." před samotnou kontrolou textu
+                val_clean = re.sub(r'(?i)p\.?\s*a\.?', '', str(val))
+                
                 # Regex vysvětlení: [^...] znamená cokoliv KROMĚ znaků uvnitř.
                 # \d = čísla, \, = čárka, \. = tečka, \s = mezery, \% = procento, \-\+ = minus/plus
-                if re.search(r'[^\d\,\.\s\%\-\+]', str(val)):
+                if re.search(r'[^\d\,\.\s\%\-\+]', val_clean):
                     return 'VARIABLE_STRING'
         return 'FIXED_NOSTRING'
 
