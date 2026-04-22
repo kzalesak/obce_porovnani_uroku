@@ -2,6 +2,7 @@ import pandas as pd
 import hashlib
 import numpy as np
 import os
+import re  # Nový import pro extrakci roku z názvu souboru
 
 # ================= NASTAVENÍ CEST =================
 INPUT_DIR = 'data/clean'
@@ -43,10 +44,17 @@ def process_files():
         file_path = os.path.join(INPUT_DIR, filename)
         print(f"\nZpracovávám: {filename}")
         
+        # Extrakce roku z názvu souboru (hledá 4 číslice, např. 2021)
+        year_match = re.search(r'\d{4}', filename)
+        data_year = year_match.group(0) if year_match else "XXXX"
+        
         # Načtení TSV (používáme tabulátor, protože data už jsou vyčištěná)
         df = pd.read_csv(file_path, sep='\t', dtype=str)
 
         try:
+            # Přidání sloupce s rokem datasetu
+            df['DATAYEAR'] = data_year
+
             # Dynamické určení sloupců
             col_ico = get_col(df, 'ZC_ICO:ZC_ICO')
             col_ico_posk = get_col(df, 'ZC_PARTP:ZC_PARTP')
@@ -80,14 +88,15 @@ def process_files():
                 h_ucel = df.loc[is_duplicate, col_ucel].apply(short_hash)
                 df.loc[is_duplicate, 'DEDUP_SUFFIX'] = h_posk + '-' + h_ucel
 
-            # 3. COMPOSITE_ID pro finální unikátnost
+            # 3. COMPOSITE_ID pro finální unikátnost (včetně DEDUP_SUFFIX a DATAYEAR)
             df['COMPOSITE_ID'] = df.apply(
-                lambda row: f"{row['ID']}-{row['DEDUP_SUFFIX']}" if pd.notna(row['DEDUP_SUFFIX']) else row['ID'], 
+                lambda row: f"{row['ID']}-{row['DEDUP_SUFFIX']}-{row['DATAYEAR']}" if pd.notna(row['DEDUP_SUFFIX']) else f"{row['ID']}-{row['DATAYEAR']}", 
                 axis=1
             )
 
             # Statistiky
             rem_dups = df.duplicated(subset=['COMPOSITE_ID'], keep=False).sum()
+            print(f"  - Rok datasetu: {data_year}")
             print(f"  - Celkem řádků: {len(df)}")
             print(f"  - Unikátních ID: {df['ID'].nunique()}")
             print(f"  - Počet duplicit vyžadujících suffix: {is_duplicate.sum()}")
