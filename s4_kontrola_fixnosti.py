@@ -130,7 +130,7 @@ def analyze_rates():
                 except ValueError:
                     unique_rates.add(str(val).lower().strip())
         
-        return 'VARIABLE' if len(unique_rates) > 1 else 'FIXED'
+        return 'CHANGED' if len(unique_rates) > 1 else 'STABLE'
 
     def classify_string(row):
         for col in rate_cols:
@@ -138,14 +138,14 @@ def analyze_rates():
             if pd.notna(val) and str(val).strip() != '':
                 val_clean = re.sub(r'(?i)p\.?\s*a\.?', '', str(val))
                 if re.search(r'[^\d\,\.\s\%\-\+]', val_clean):
-                    return 'VARIABLE_STRING'
-        return 'FIXED_NOSTRING'
+                    return 'HAS_STRING'
+        return 'NO_STRING'
 
-    merged_df['FIXED_OR_VARIABLE'] = merged_df.apply(classify_variance, axis=1)
-    merged_df['FIXED_NOSTRING_OR_VARIABLE_STRING'] = merged_df.apply(classify_string, axis=1)
+    merged_df['RATE_CHANGED'] = merged_df.apply(classify_variance, axis=1)
+    merged_df['HAS_STRING'] = merged_df.apply(classify_string, axis=1)
 
     # 4. Sestavení finálních sloupců
-    final_cols = ['ID', 'DEDUP_SUFFIX', 'DATAYEAR_MERGED', 'LOAN_AMOUNT'] + cerp_cols + rate_cols + ['FIXED_OR_VARIABLE', 'FIXED_NOSTRING_OR_VARIABLE_STRING'] + ucel_cols
+    final_cols = ['ID', 'DEDUP_SUFFIX', 'DATAYEAR_MERGED', 'LOAN_AMOUNT'] + cerp_cols + rate_cols + ['RATE_CHANGED', 'HAS_STRING'] + ucel_cols
     
     # Pojistka pro existující sloupce
     final_cols = [c for c in final_cols if c in merged_df.columns]
@@ -198,11 +198,11 @@ def analyze_rates():
     
     # Krátká statistika
     print("\n--- STATISTIKA KLASIFIKACÍ ---")
-    print("\nEmpirická změna v čase (FIXED vs VARIABLE):")
-    print(final_df['FIXED_OR_VARIABLE'].value_counts())
+    print("\nEmpirická změna v čase (CHANGED vs STABLE):")
+    print(final_df['RATE_CHANGED'].value_counts())
     
-    print("\nPřítomnost textu ve stringu (NOSTRING vs STRING):")
-    print(final_df['FIXED_NOSTRING_OR_VARIABLE_STRING'].value_counts())
+    print("\nPřítomnost textu ve stringu (NO_STRING vs HAS_STRING):")
+    print(final_df['HAS_STRING'].value_counts())
     
     print(f"\n=========================================================")
     print(f"HOTOVO. Výstupní soubory čekají na vaši manuální kontrolu v:")
