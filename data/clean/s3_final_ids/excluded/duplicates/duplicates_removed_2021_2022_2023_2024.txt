@@ -10,15 +10,17 @@ File: FINSZU101_2022012.tsv (Rok: 2022)
 
   --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
   Odstraněný podíl úvěrů (řádky): 0.576 %
-  Odstraněný podíl financí (Sjednaná): 0.065 %
-  Odstraněný podíl financí (Čerpaná):  0.082 %
+  Odstraněný podíl financí (Sjednaná): 0.065 % (Celkem odstraněno: 122,783,280 CZK)
+  Odstraněný podíl financí (Čerpaná):  0.082 % (Celkem odstraněno: 117,783,280 CZK)
 
-  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
-     0-10m :   33 | ██████████████████████████████
-    10-20m :    0 | 
-    20-30m :    0 | 
-    30-40m :    0 | 
-    40-50m :    0 | 
+  --- Histogram (bez ZERO_LOAN) ---
+      0-10m :   33 | ██████████████████████████████
+     10-20m :    0 | 
+     20-30m :    0 | 
+     30-40m :    0 | 
+     40-50m :    0 | 
+    50-100m :    0 | 
+     100m+  :    0 | 
 ------------------------------------------------------------
 File: FINSZU101_2024012.tsv (Rok: 2024)
   Celkem řádků na vstupu: 5237
@@ -30,15 +32,17 @@ File: FINSZU101_2024012.tsv (Rok: 2024)
 
   --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
   Odstraněný podíl úvěrů (řádky): 0.630 %
-  Odstraněný podíl financí (Sjednaná): 0.069 %
-  Odstraněný podíl financí (Čerpaná):  0.090 %
+  Odstraněný podíl financí (Sjednaná): 0.069 % (Celkem odstraněno: 131,005,880 CZK)
+  Odstraněný podíl financí (Čerpaná):  0.090 % (Celkem odstraněno: 131,005,880 CZK)
 
-  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
-     0-10m :   31 | ██████████████████████████████
-    10-20m :    2 | █
-    20-30m :    0 | 
-    30-40m :    0 | 
-    40-50m :    0 | 
+  --- Histogram (bez ZERO_LOAN) ---
+      0-10m :   31 | ██████████████████████████████
+     10-20m :    2 | █
+     20-30m :    0 | 
+     30-40m :    0 | 
+     40-50m :    0 | 
+    50-100m :    0 | 
+     100m+  :    0 | 
 ------------------------------------------------------------
 File: FINSZU101_2023012.tsv (Rok: 2023)
   Celkem řádků na vstupu: 5383
@@ -50,15 +54,17 @@ File: FINSZU101_2023012.tsv (Rok: 2023)
 
   --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
   Odstraněný podíl úvěrů (řádky): 0.632 %
-  Odstraněný podíl financí (Sjednaná): 0.074 %
-  Odstraněný podíl financí (Čerpaná):  0.096 %
+  Odstraněný podíl financí (Sjednaná): 0.074 % (Celkem odstraněno: 137,639,280 CZK)
+  Odstraněný podíl financí (Čerpaná):  0.096 % (Celkem odstraněno: 137,639,280 CZK)
 
-  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
-     0-10m :   32 | ██████████████████████████████
-    10-20m :    2 | █
-    20-30m :    0 | 
-    30-40m :    0 | 
-    40-50m :    0 | 
+  --- Histogram (bez ZERO_LOAN) ---
+      0-10m :   32 | ██████████████████████████████
+     10-20m :    2 | █
+     20-30m :    0 | 
+     30-40m :    0 | 
+     40-50m :    0 | 
+    50-100m :    0 | 
+     100m+  :    0 | 
 ------------------------------------------------------------
 File: FINSZU101_2021012.tsv (Rok: 2021)
   Celkem řádků na vstupu: 5797
@@ -70,15 +76,17 @@ File: FINSZU101_2021012.tsv (Rok: 2021)
 
   --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
   Odstraněný podíl úvěrů (řádky): 0.345 %
-  Odstraněný podíl financí (Sjednaná): 0.036 %
-  Odstraněný podíl financí (Čerpaná):  0.050 %
+  Odstraněný podíl financí (Sjednaná): 0.036 % (Celkem odstraněno: 72,553,680 CZK)
+  Odstraněný podíl financí (Čerpaná):  0.050 % (Celkem odstraněno: 72,553,680 CZK)
 
-  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
-     0-10m :   20 | ██████████████████████████████
-    10-20m :    0 | 
-    20-30m :    0 | 
-    30-40m :    0 | 
-    40-50m :    0 | 
+  --- Histogram (bez ZERO_LOAN) ---
+      0-10m :   20 | ██████████████████████████████
+     10-20m :    0 | 
+     20-30m :    0 | 
+     30-40m :    0 | 
+     40-50m :    0 | 
+    50-100m :    0 | 
+     100m+  :    0 | 
 ------------------------------------------------------------
 
 

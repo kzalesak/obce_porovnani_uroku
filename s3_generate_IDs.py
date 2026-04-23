@@ -5,7 +5,7 @@ import os
 import re
 
 # ================= NASTAVENÍ CEST =================
-INPUT_DIR = 'data/clean'
+INPUT_DIR = 'data/clean/s2.2_levenshtein_clean_manual'
 OUTPUT_DIR = 'data/clean/s3_final_ids'
 EXCLUDED_DIR = os.path.join(OUTPUT_DIR, 'excluded', 'duplicates')
 
