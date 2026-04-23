@@ -1,0 +1,89 @@
+=== Analýza duplicitních záznamů a odstraňování vadných dat ===
+
+File: FINSZU101_2022012.tsv (Rok: 2022)
+  Celkem řádků na vstupu: 5732
+  --- Důvody odstranění ---
+  Lokální duplicity (DEDUP_POPULATED): 33
+  Nulová výše úvěru (ZERO_LOAN):       26 (Pozn: Nezapočítává se do ztráty dat)
+  Křížově odstraněno (CROSS_REMOVED):  0
+  Celkem vyřazeno z analýzy:           59
+
+  --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
+  Odstraněný podíl úvěrů (řádky): 0.576 %
+  Odstraněný podíl financí (Sjednaná): 0.065 %
+  Odstraněný podíl financí (Čerpaná):  0.082 %
+
+  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
+     0-10m :   33 | ██████████████████████████████
+    10-20m :    0 | 
+    20-30m :    0 | 
+    30-40m :    0 | 
+    40-50m :    0 | 
+------------------------------------------------------------
+File: FINSZU101_2024012.tsv (Rok: 2024)
+  Celkem řádků na vstupu: 5237
+  --- Důvody odstranění ---
+  Lokální duplicity (DEDUP_POPULATED): 31
+  Nulová výše úvěru (ZERO_LOAN):       15 (Pozn: Nezapočítává se do ztráty dat)
+  Křížově odstraněno (CROSS_REMOVED):  2
+  Celkem vyřazeno z analýzy:           48
+
+  --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
+  Odstraněný podíl úvěrů (řádky): 0.630 %
+  Odstraněný podíl financí (Sjednaná): 0.069 %
+  Odstraněný podíl financí (Čerpaná):  0.090 %
+
+  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
+     0-10m :   31 | ██████████████████████████████
+    10-20m :    2 | █
+    20-30m :    0 | 
+    30-40m :    0 | 
+    40-50m :    0 | 
+------------------------------------------------------------
+File: FINSZU101_2023012.tsv (Rok: 2023)
+  Celkem řádků na vstupu: 5383
+  --- Důvody odstranění ---
+  Lokální duplicity (DEDUP_POPULATED): 33
+  Nulová výše úvěru (ZERO_LOAN):       11 (Pozn: Nezapočítává se do ztráty dat)
+  Křížově odstraněno (CROSS_REMOVED):  1
+  Celkem vyřazeno z analýzy:           45
+
+  --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
+  Odstraněný podíl úvěrů (řádky): 0.632 %
+  Odstraněný podíl financí (Sjednaná): 0.074 %
+  Odstraněný podíl financí (Čerpaná):  0.096 %
+
+  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
+     0-10m :   32 | ██████████████████████████████
+    10-20m :    2 | █
+    20-30m :    0 | 
+    30-40m :    0 | 
+    40-50m :    0 | 
+------------------------------------------------------------
+File: FINSZU101_2021012.tsv (Rok: 2021)
+  Celkem řádků na vstupu: 5797
+  --- Důvody odstranění ---
+  Lokální duplicity (DEDUP_POPULATED): 20
+  Nulová výše úvěru (ZERO_LOAN):       27 (Pozn: Nezapočítává se do ztráty dat)
+  Křížově odstraněno (CROSS_REMOVED):  0
+  Celkem vyřazeno z analýzy:           47
+
+  --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---
+  Odstraněný podíl úvěrů (řádky): 0.345 %
+  Odstraněný podíl financí (Sjednaná): 0.036 %
+  Odstraněný podíl financí (Čerpaná):  0.050 %
+
+  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---
+     0-10m :   20 | ██████████████████████████████
+    10-20m :    0 | 
+    20-30m :    0 | 
+    30-40m :    0 | 
+    40-50m :    0 | 
+------------------------------------------------------------
+
+
+=== Křížové odstranění ID napříč roky ===
+  FINSZU101_2022012.tsv: 0 řádků křížově odebráno.
+  FINSZU101_2024012.tsv: dodatečně odebráno 2 řádků (CROSS_REMOVED).
+  FINSZU101_2023012.tsv: dodatečně odebráno 1 řádků (CROSS_REMOVED).
+  FINSZU101_2021012.tsv: 0 řádků křížově odebráno.
