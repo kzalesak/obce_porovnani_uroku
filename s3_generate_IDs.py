@@ -161,7 +161,6 @@ def process_files():
             df_excluded.to_csv(os.path.join(EXCLUDED_DIR, removed_filename), sep='\t', index=False)
 
         # Výpočty pro nejistotu (DEDUP + CROSS, BEZ ZERO_LOAN)
-        # Filtrujeme pouze záznamy, které nejsou ZERO_LOAN pro výpočet ztráty
         df_uncertainty = df_excluded[df_excluded['reason_of_removal'] != 'ZERO_LOAN'].copy()
         
         if not df_uncertainty.empty:
@@ -175,9 +174,10 @@ def process_files():
             pct_vyse_unc = (sum_unc_vyse / data['total_vyse_year'] * 100) if data['total_vyse_year'] > 0 else 0
             pct_cerp_unc = (sum_unc_cerp / data['total_cerp_year'] * 100) if data['total_cerp_year'] > 0 else 0
         else:
+            sum_unc_vyse = sum_unc_cerp = 0
             pct_rows_unc = pct_vyse_unc = pct_cerp_unc = 0
 
-        # Sestavení reportu
+        # Sestavení reportu s dodanými součty financí
         out = [
             f"File: {filename} (Rok: {data['year']})",
             f"  Celkem řádků na vstupu: {data['total_rows_start']}",
@@ -189,27 +189,30 @@ def process_files():
             f"",
             f"  --- Ztráta dat pro výpočet nejistoty (pouze DEDUP a CROSS) ---",
             f"  Odstraněný podíl úvěrů (řádky): {pct_rows_unc:.3f} %",
-            f"  Odstraněný podíl financí (Sjednaná): {pct_vyse_unc:.3f} %",
-            f"  Odstraněný podíl financí (Čerpaná):  {pct_cerp_unc:.3f} %",
+            f"  Odstraněný podíl financí (Sjednaná): {pct_vyse_unc:.3f} % (Celkem odstraněno: {sum_unc_vyse:,.0f} CZK)",
+            f"  Odstraněný podíl financí (Čerpaná):  {pct_cerp_unc:.3f} % (Celkem odstraněno: {sum_unc_cerp:,.0f} CZK)",
             f""
         ]
         
-        # Histogram a kategorie pro nenulové odstraněné
+        # Rozšířený histogram
         df_stats = df_excluded[df_excluded['reason_of_removal'] != 'ZERO_LOAN'].copy()
         if not df_stats.empty:
             df_stats['v'] = pd.to_numeric(df_stats[data['col_vyse']].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce').fillna(0)
-            sub_50 = df_stats[df_stats['v'] < 50_000_000]
-            out.append(f"  --- Histogram (0 - 50 mil CZK, bez ZERO_LOAN) ---")
-            if not sub_50.empty:
-                bins = [0, 10e6, 20e6, 30e6, 40e6, 50e6]
-                labels = [" 0-10m ", "10-20m ", "20-30m ", "30-40m ", "40-50m "]
-                sub_50_hist = sub_50.copy()
-                sub_50_hist['bin'] = pd.cut(sub_50_hist['v'], bins=bins, labels=labels, right=False)
-                counts = sub_50_hist['bin'].value_counts().sort_index()
-                max_c = counts.max()
-                for label, count in counts.items():
-                    bar = '█' * (int((count/max_c)*30) if max_c > 0 else 0)
-                    out.append(f"    {label}: {count:4} | {bar}")
+            
+            out.append(f"  --- Histogram (bez ZERO_LOAN) ---")
+            
+            # Nové bin kategorie: 50-100 a nad 100 mil
+            bins = [0, 10e6, 20e6, 30e6, 40e6, 50e6, 100e6, float('inf')]
+            labels = ["  0-10m ", " 10-20m ", " 20-30m ", " 30-40m ", " 40-50m ", "50-100m ", " 100m+  "]
+            
+            df_stats_hist = df_stats.copy()
+            df_stats_hist['bin'] = pd.cut(df_stats_hist['v'], bins=bins, labels=labels, right=False)
+            counts = df_stats_hist['bin'].value_counts().sort_index()
+            
+            max_c = counts.max()
+            for label, count in counts.items():
+                bar = '█' * (int((count/max_c)*30) if max_c > 0 else 0)
+                out.append(f"    {label}: {count:4} | {bar}")
             
         out.append("-" * 60)
         report_lines.append("\n".join(out))
