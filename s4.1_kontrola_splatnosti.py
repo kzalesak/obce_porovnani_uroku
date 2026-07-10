@@ -143,11 +143,12 @@ def apply_match(datasets, y2, loan_y1, comp_id_y2, delta_days):
     elif delta_days < 0:
         datasets[y2].at[idx_y2, 'LOAN_YOY_DATE_CHANGE'] = "Shortened"
 
-def make_review_row(y1, y2, loan_y1, cand_y2, reason):
+def make_review_row(y1, y2, loan_y1, cand_y2, reason, skipped_years=0):
     return {
         'GROUP_ID': f"{loan_y1['MLS_KEY']}__{y2}",
         'YEAR_Y1': y1,
         'YEAR_Y2': y2,
+        'SKIPPED_YEARS': skipped_years,
         'Y1_COMPOSITE_ID': loan_y1['COMPOSITE_ID'],
         'Y2_COMPOSITE_ID': cand_y2['COMPOSITE_ID'],
         'MUNI': loan_y1[COL_MUNI],
@@ -222,11 +223,12 @@ def write_review_queue(review_rows):
 
 # --- 5. Matching pass (shared by --count and the real run) ---
 def run_matching_pass(datasets, years, decision_cache, count_mode):
-    early_payoffs = []
+    early_payoffs = []  # list of (year_y1, ep_dict)
     review_rows = []
 
     stats = Counter()
     reason_counts = Counter()
+    claimed_by_year = {y: set() for y in years}
 
     for i in range(len(years) - 1):
         y1, y2 = years[i], years[i + 1]
@@ -239,7 +241,6 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
         expected = df1[df1['Maturity_Year'] > y1]
 
         df2_composites = set(df2['COMPOSITE_ID'].dropna())
-        claimed_candidates = set()
 
         pair_counts = Counter()
 
@@ -254,7 +255,7 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
             candidates = df2[
                 (df2[COL_MUNI] == loan_y1[COL_MUNI]) &
                 (df2[COL_LEND_ICO] == loan_y1[COL_LEND_ICO]) &
-                (~df2['COMPOSITE_ID'].isin(claimed_candidates))
+                (~df2['COMPOSITE_ID'].isin(claimed_by_year[y2]))
             ]
 
             if len(candidates) == 0:
@@ -264,7 +265,7 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
                     datasets[y1].at[idx_y1, 'LOAN_YOY_DATE_CHANGE'] = "Repaid Early"
                     ep_dict = loan_y1.to_dict()
                     ep_dict['LOAN_YOY_DATE_CHANGE'] = "Repaid Early"
-                    early_payoffs.append(ep_dict)
+                    early_payoffs.append((y1, ep_dict))
                 continue
 
             match_found = False
@@ -287,7 +288,7 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
                 stats['auto_matched'] += 1
                 stats['auto_amount_matched'] += 1
                 pair_counts['auto_matched'] += 1
-                claimed_candidates.add(comp_id_y2)
+                claimed_by_year[y2].add(comp_id_y2)
 
                 if not count_mode:
                     print(f"[AMOUNT] {reason} (Muni: {loan_y1[COL_MUNI]})")
@@ -362,7 +363,7 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
                     if decision == 'Y':
                         if auto_match:
                             print(f"[SMART] {reason} (Muni: {loan_y1[COL_MUNI]})")
-                        claimed_candidates.add(comp_id_y2)
+                        claimed_by_year[y2].add(comp_id_y2)
                         if not count_mode:
                             apply_match(datasets, y2, loan_y1, comp_id_y2, delta_days)
                         match_found = True
@@ -381,7 +382,7 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
                     datasets[y1].at[idx_y1, 'LOAN_YOY_DATE_CHANGE'] = "Repaid Early"
                     ep_dict = loan_y1.to_dict()
                     ep_dict['LOAN_YOY_DATE_CHANGE'] = "Repaid Early"
-                    early_payoffs.append(ep_dict)
+                    early_payoffs.append((y1, ep_dict))
 
         stats['unresolved_loans'] += pair_counts['unresolved_loans']
 
@@ -392,6 +393,74 @@ def run_matching_pass(datasets, years, decision_cache, count_mode):
             print(f"    - Ambiguous but already answered in decision_cache.tsv:      {pair_counts['manual_cached']}")
             print(f"    - Ambiguous, NOT cached -> would need review right now:      {pair_counts['manual_new']}")
             print(f"    - Candidates existed but none matched any signal (clean repaid-early): {pair_counts['no_match_in_dry_run']}")
+
+    # --- Gap check: a loan tagged "Repaid Early" only got checked against the
+    # immediate next year. If a filing was simply skipped, the loan may
+    # reappear later - search all later years too, and always defer to human
+    # review (never auto-merge across a multi-year gap).
+    if not count_mode:
+        gap_reviewed = 0
+        for y1, ep_dict in list(early_payoffs):
+            comp_id_y1 = ep_dict['COMPOSITE_ID']
+            idx_y1 = datasets[y1].index[datasets[y1]['COMPOSITE_ID'] == comp_id_y1].tolist()[0]
+            loan_y1 = datasets[y1].loc[idx_y1]
+
+            for y_gap in years:
+                if y_gap <= y1 + 1:
+                    continue
+
+                pool = datasets[y_gap]
+                gap_candidates = pool[
+                    (pool[COL_MUNI] == loan_y1[COL_MUNI]) &
+                    (pool[COL_LEND_ICO] == loan_y1[COL_LEND_ICO]) &
+                    (~pool['COMPOSITE_ID'].isin(claimed_by_year[y_gap])) &
+                    (pool[COL_SJEDNANA].apply(lambda v: amounts_match(loan_y1[COL_SJEDNANA], v)))
+                ]
+                if len(gap_candidates) == 0:
+                    continue
+
+                skipped = y_gap - y1 - 1
+                resolved = False
+                for _, cand in gap_candidates.iterrows():
+                    comp_id_gap = cand['COMPOSITE_ID']
+                    cache_key = (comp_id_y1, comp_id_gap)
+                    decision = decision_cache.get(cache_key)
+
+                    if decision == 'Y':
+                        delta_days = compute_delta_days(loan_y1, cand)
+                        apply_match(datasets, y_gap, loan_y1, comp_id_gap, delta_days)
+                        datasets[y_gap].at[
+                            datasets[y_gap].index[datasets[y_gap]['COMPOSITE_ID'] == comp_id_gap].tolist()[0],
+                            'LOAN_YOY_DATE_CHANGE'
+                        ] = f"Reporting Gap ({skipped}y)"
+                        datasets[y1].at[idx_y1, 'LOAN_YOY_DATE_CHANGE'] = ""
+                        claimed_by_year[y_gap].add(comp_id_gap)
+                        early_payoffs.remove((y1, ep_dict))
+                        resolved = True
+                        print(f"[GAP] Reconnected after {skipped}y gap (Muni: {loan_y1[COL_MUNI]})")
+                        break
+                    elif decision == 'N':
+                        continue
+                    else:
+                        review_rows.append(make_review_row(
+                            y1, y_gap, loan_y1, cand,
+                            reason=f"Reporting-gap candidate ({skipped} year(s) skipped).",
+                            skipped_years=skipped,
+                        ))
+                        gap_reviewed += 1
+
+                if resolved:
+                    break
+                if any(decision_cache.get((comp_id_y1, c['COMPOSITE_ID'])) is None for _, c in gap_candidates.iterrows()):
+                    # At least one candidate is still undecided - loan stays
+                    # pending rather than a confirmed early payoff.
+                    datasets[y1].at[idx_y1, 'LOAN_YOY_DATE_CHANGE'] = "PENDING_REVIEW"
+                    if (y1, ep_dict) in early_payoffs:
+                        early_payoffs.remove((y1, ep_dict))
+                    break
+
+        if gap_reviewed:
+            print(f"\nFlagged {gap_reviewed} reporting-gap candidate(s) across later years for review.")
 
     if count_mode:
         print(f"\n{'='*50}\nSUMMARY ACROSS ALL {len(years)-1} YEAR-PAIRS\n{'='*50}")
@@ -482,7 +551,7 @@ def main():
         df.to_csv(os.path.join(OUTPUT_DIR, file_mapping[year]), sep='\t', index=False)
 
     if early_payoffs:
-        ep_df = pd.DataFrame(early_payoffs).drop(columns=[c for c in temp_cols], errors='ignore')
+        ep_df = pd.DataFrame([d for _, d in early_payoffs]).drop(columns=[c for c in temp_cols], errors='ignore')
         ep_df.to_csv(os.path.join(OUTPUT_DIR, 'early_payoffs_summary.tsv'), sep='\t', index=False)
         print(f"Success! Found {len(early_payoffs)} early payoffs.")
     else:
