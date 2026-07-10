@@ -45,6 +45,13 @@ Run: `python s4_kontrola_fixnosti.py`
 * **What happens**: Merges data across different years to classify interest rates as **FIXED** or **VARIABLE**.
 * **Output**: A final matrix for manual review in `data/clean/kontrola_fixnosti/`.
 
+### 6. Early Repayment Check
+Run: `python s4.1_kontrola_splatnosti.py`
+* **What happens**: Matches loans across consecutive years to detect loans that were **extended**, **shortened**, or **repaid early**. A loan whose `Sjednaná výše` (agreed amount) uniquely matches one candidate in the next year is auto-resolved with no human input (amount is ~99.95% stable for the same loan year-to-year, so this alone clears the vast majority of cases — mainly the "collision" scenario where a municipality has multiple loans from the same lender starting the same day). Only genuinely ambiguous cases (duplicate amounts, or no amount match at all) need a human — the run never blocks.
+* **Manual Step**: Ambiguous candidates are written to `data/clean/s4.1_kontrola_predcasneho_splaceni_temp/review_needed.tsv`. Open it in Excel/Sheets, fill the `DECISION` column with `Y`/`N`, save, then run `python s4.1_kontrola_splatnosti.py --apply-review` to fold your decisions into `decision_cache.tsv` and produce the final output. Re-running the plain command while `review_needed.tsv` has unapplied edits will refuse to proceed (pass `--force` to discard them instead).
+* **Other flags**: `--count` does a dry run reporting how many cases would still need review, without writing anything.
+* **Output**: Updated yearly datasets (unresolved rows marked `PENDING_REVIEW`) plus `early_payoffs_summary.tsv` in `data/clean/s4.1_kontrola_predcasneho_splaceni/`. Cache lives in `data/clean/s4.1_kontrola_predcasneho_splaceni_temp/decision_cache.tsv`.
+
 ---
 
 ## 🔑 Key Column Mapping
